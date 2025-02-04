@@ -3,3 +3,17 @@
 @tailwind utilities;
 
 
+@layer utilities {
+    .size {
+        @apply w-32 h-32 xl:w-32 xl:h-32 2xl:w-48 2xl:h-48;
+    }
+    
+    .square {
+        @apply h-32 sm:h-24 lg:h-28 xl:h-32 2xl:h-48;
+        aspect-ratio: 1 / 1;
+    }
+}
+
+ 
+
+

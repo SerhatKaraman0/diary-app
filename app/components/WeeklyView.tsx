@@ -1,17 +1,13 @@
+"use client";
+import DayCard from "./DayCard";
+
 export default function WeeklyView() {
     return (
         <>
-        <div className="flex h-screen w-3/4 bg-white">
-          <div className="grid grid-cols-3 grid-rows-3 bg-transparent">
+        <div className="flex h-screen w-1/2 bg-white">
+        <div className="grid grid-cols-3 gap-0 w-full h-full" style={{ gridTemplateRows: 'repeat(3, minmax(0, 1fr))' }}>
               {Array.from({ length: 7 }, (_, i) => (
-              <div
-                  key={i}
-                  className="w-80 h-80 gap-y-0 
-                          bg-transparent border-2 
-                          border-black m-1 p-0"
-              >
-                  <p>{i + 1}</p>
-              </div>
+                <DayCard key={i} date={i+1} weekly={true} className="h-52 w-52"/>
               ))}
           </div>
         </div>
