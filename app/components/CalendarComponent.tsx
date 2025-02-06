@@ -1,5 +1,7 @@
 "use client";
+import React from "react";
 import DayCard from "./DayCard";
+
 
 const daysOfMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -28,3 +30,5 @@ export default function CalendarComponent() {
     </>
   );
 }
+
+export const CalendarComp = React.memo(CalendarComponent);

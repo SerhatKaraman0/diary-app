@@ -1,5 +1,6 @@
 
 import CalendarComponent from "./components/CalendarComponent";
+import CalendarComp from "./components/CalendarComponent";
 import GoDateButton from "./components/GoDateButton";
 
 
