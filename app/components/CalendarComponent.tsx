@@ -10,10 +10,11 @@ export default function CalendarComponent() {
   return (
     <>
       <div className="flex h-screen w-full bg-white">
-        <div className="grid grid-cols-10 gap-0 w-full h-full">
+        <div className="grid grid-cols-10 gap-0 w-full h-full overflow-y-auto">
           {daysOfMonths.flatMap((days, monthIndex) =>
             Array.from({ length: days }, (_, dayIndex) => (
               <DayCard
+                scrollId={`${months[monthIndex]}-${dayIndex+1}`}
                 key={`${monthIndex}-${dayIndex}`}
                 month={months[monthIndex]}
                 day={`${dayIndex + 1}`}
