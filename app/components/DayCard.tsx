@@ -9,16 +9,19 @@ interface Props extends React.PropsWithChildren {
     month?: string;
     totalDayIndex?: number;
     key?: string;
+    scrollId?: string;
   }
   const DayCard: React.FC<Props> = ({
     className = "",
     totalDayIndex,
     day,
     month,
+    scrollId,
   }) => {
     const isLeftmostCell = totalDayIndex ? totalDayIndex % 10 === 1 : false;
     return (
       <motion.div
+        id={scrollId}
         className={`relative border-r border-b ${isLeftmostCell ? 'border-l' : ''}  border-black p-4 min-h-[120px] hover:bg-green-500 transition-colors ${className}`}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
