@@ -106,7 +106,6 @@ export default function TestRoute() {
                 >
                     <div 
                         className="w-5/6 h-5/6 bg-white flex border border-black"
-                        // Prevent closing when clicking on the modal content
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex-1 p-6 overflow-auto border-r border-black">
