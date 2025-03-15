@@ -18,18 +18,20 @@ const DayCard: React.FC<Props> = ({
   day,
   month,
   scrollId,
+  onClick,
 }) => {
   const isLeftmostCell = totalDayIndex ? totalDayIndex % 10 === 1 : false;
   return (
     <motion.div
         id={scrollId}
-        className={`relative border-r border-b ${isLeftmostCell ? 'border-l' : ''}  border-black p-4 min-h-[120px] hover:bg-green-500 transition-colors ${className}`}
+        className={`relative border-r border-b ${isLeftmostCell ? 'border-l' : ''} border-black p-4 min-h-[120px] hover:bg-green-500 transition-colors ${className}`}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        onClick={onClick}
       >
         <p className="absolute top-0 left-0 pl-2 text-red-400 text-3xl">{day}</p>
         <p className="absolute bottom-0 left-0 pl-2 text-xl">{month}</p>
-        <p className="absolute  bottom-0 right-0 pr-2 text-slate-600 text-lg">{totalDayIndex}</p>
+        <p className="absolute bottom-0 right-0 pr-2 text-slate-600 text-lg">{totalDayIndex}</p>
       </motion.div>
   );
 };
