@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -82,8 +83,7 @@ const DayModal: React.FC<DayModalProps> = ({ isOpen, onClose }) => {
         case 'orders':
             return (
                 <div className="h-full flex flex-col">
-                    <h2 className="text-xl font-light border-b border-black pb-2 mb-4">Notes and Photos</h2>
-                    <div className='notes-and-photos-section'>
+                    <div className='notes-and-photos-section no-scrollbar'>
                         <div>
                             {notes.map((note) => (
                                 <NoteCard note={note} key={note.$id} />
@@ -110,40 +110,40 @@ const DayModal: React.FC<DayModalProps> = ({ isOpen, onClose }) => {
       }}
     >
       <motion.div 
-        className="w-5/6 h-5/6 bg-white flex border border-black"
+        className="w-[95vw] h-[95vh] bg-white flex border border-black"
         initial={{ scale: 0.8 }}
         animate={{ scale: isOpen ? 1 : 0.8 }}
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex-1 p-6 overflow-auto border-r border-black">
+        <div className="flex-1 p-8 overflow-auto border-r border-black">
           {renderContent()}
         </div>
 
-        <div className="w-16 flex flex-col">
+        <div className="w-20 flex flex-col">
           {sidebarItems.map((item) => (
             <button
               key={item.key}
               onClick={() => setActiveItem(item.key)}
-              className={`p-3 border-b border-black hover:bg-black hover:text-white transition-all ${
+              className={`p-4 border-b border-black hover:bg-black hover:text-white transition-all ${
                   activeItem === item.key 
                       ? 'bg-black text-white' 
                       : ''
               }`}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-6 w-6" />
             </button>
           ))}
           <button 
-            className="p-3 border-b border-black hover:bg-black hover:text-white"
+            className="p-4 border-b border-black hover:bg-black hover:text-white"
           >
-            <Save className="h-5 w-5" />
+            <Save className="h-6 w-6" />
           </button>
           <button 
             onClick={onClose}
-            className="p-3 border-t border-black hover:bg-black hover:text-white"
+            className="p-4 mt-auto border-t border-black hover:bg-black hover:text-white"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-6 w-6" />
           </button>
         </div>
       </motion.div>
