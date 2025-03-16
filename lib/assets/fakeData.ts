@@ -1,41 +1,22 @@
 export const fakeData = [
     {
-        $id: 1,
-        body: JSON.stringify(
-            'Resources:\n- Book: "You Don\'t Know JS: Scope & Closures" by Kyle Simpson.\n\n- Online Course: "JavaScript Patterns" on Udemy.\n\n- Articles:\n"Understanding JavaScript Closures" on Medium.\n\n"Mastering JavaScript Modules" on Dev.to.'
-        ),
+        $id: "1",
+        position: JSON.stringify({ x: 100, y: 100 }),
         colors: JSON.stringify({
-            id: "color-purple",
-            colorHeader: "#FED0FD",
-            colorBody: "#FEE5FD",
-            colorText: "#18181A",
+            colorHeader: "#4A90E2",
+            colorBody: "#FFFFFF",
+            colorText: "#000000"
         }),
-        position: JSON.stringify({ x: 505, y: 10 }),
+        body: JSON.stringify("This is a sample note for testing the diary app.")
     },
     {
-        $id: 2,
-        body: JSON.stringify(
-            'Resources:\n- Book: "You Don\'t Know JS: Scope & Closures" by Kyle Simpson.\n\n- Online Course: "JavaScript Patterns" on Udemy.\n\n- Articles:\n"Understanding JavaScript Closures" on Medium.\n\n"Mastering JavaScript Modules" on Dev.to.'
-        ),
+        $id: "2",
+        position: JSON.stringify({ x: 400, y: 200 }),
         colors: JSON.stringify({
-            id: "color-blue",
-            colorHeader: "#9BD1DE",
-            colorBody: "#A6DCE9",
-            colorText: "#18181A",
+            colorHeader: "#E24A67",
+            colorBody: "#FFFFFF",
+            colorText: "#000000"
         }),
-        position: JSON.stringify({ x: 305, y: 110 }),
-    },
-    {
-        $id: 3,
-        body: JSON.stringify(
-            'Resources:\n- Book: "You Don\'t Know JS: Scope & Closures" by Kyle Simpson.\n\n- Online Course: "JavaScript Patterns" on Udemy.\n\n- Articles:\n"Understanding JavaScript Closures" on Medium.\n\n"Mastering JavaScript Modules" on Dev.to.'
-        ),
-        colors: JSON.stringify({
-            id: "color-yellow",
-            colorHeader: "#FFEFBE",
-            colorBody: "#FFF5DF",
-            colorText: "#18181A",
-        }),
-        position: JSON.stringify({ x: 605, y: 500 }),
-    },
+        body: JSON.stringify("Another test note with different position and colors.")
+    }
 ];

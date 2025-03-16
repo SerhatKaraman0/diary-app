@@ -8,8 +8,11 @@
     }
     
     .square {
-        @apply h-32 sm:h-24 lg:h-28 xl:h-32 2xl:h-48;
-        aspect-ratio: 1 / 1;
+        aspect-ratio: 1;
+        width: 100%;
+        height: 0;
+        padding-bottom: 100%;
+        position: relative;
     }
 }
 
@@ -67,15 +70,17 @@
 }
 
 .notes-and-photos-section {
-  padding: o;
+  padding: 0;
   margin: 0;
   background-color: #212228;
   background-image: linear-gradient(#292a30 0.1em, transparent 0.1em),
       linear-gradient(90deg, #292a30 0.1em, transparent 0.1em);
   background-size: 4em 4em;
+  min-height: 100%;
   height: 100vh;
   position: relative;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .card {
