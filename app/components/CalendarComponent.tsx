@@ -2,27 +2,27 @@
 import React, { useState } from "react";
 import DayCard from "./DayCard";
 import DayModal from "./DayModal";
-
+import { fakeData } from "@/lib/assets/fakeData";
 
 const daysOfMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export default function CalendarComponent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState({ day: '', month: '' });
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   let totalDayIndex = 1;
 
-  const handleDayCardClick = (day, month) => {
-    console.log(`DayCard clicked: ${day} ${month}`);
-    setSelectedDay({ day, month });
+  const handleDayClick = (day: number, month: number) => {
+    const date = new Date(new Date().getFullYear(), month, day);
+    setSelectedDate(date);
     setIsModalOpen(true);
   };
 
   return (
     <>
       <div className="flex h-screen w-full bg-white">
-        <div className="grid grid-cols-10 gap-0 w-full h-full overflow-y-auto no-scrollbar">
+        <div className="grid grid-cols-10 w-full h-full overflow-y-auto no-scrollbar">
           {daysOfMonths.flatMap((days, monthIndex) =>
             Array.from({ length: days }, (_, dayIndex) => (
               <DayCard
@@ -32,27 +32,19 @@ export default function CalendarComponent() {
                 day={`${dayIndex + 1}`}
                 totalDayIndex={totalDayIndex++}
                 className="square"
-                onClick={() => handleDayCardClick(`${dayIndex + 1}`, months[monthIndex])}
-                style={{
-                  width: 'calc(100vw / 10)',
-                  height: 'calc(100vw / 10)',
-                  maxWidth: '100px',
-                  maxHeight: '100px',
-                }}
+                onClick={() => handleDayClick(dayIndex + 1, monthIndex)}
               />
             ))
           )}
         </div>
       </div>
-      {isModalOpen && (
-        <>
-          {console.log('Rendering DayModal')}
-          <DayModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-          />
-        </>
-      )}
+
+      <DayModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        notes={fakeData}
+        date={selectedDate}
+      />
     </>
   );
 }

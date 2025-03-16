@@ -1,153 +1,158 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
 import { 
-  LayoutGrid, 
-  ShoppingCart, 
-  Package, 
-  TruckIcon, 
+  FileText, 
+  Image, 
+  Calendar, 
   BarChart2, 
-  Settings,
-  Save
+  Save,
+  X
 } from 'lucide-react';
-
 import NoteCard from "./NoteCard";
-import {fakeData as notes} from "@/lib/assets/fakeData";
+import { Note } from "@/lib/types";
 
 interface DayModalProps {
   isOpen: boolean;
   onClose: () => void;
+  notes: Note[];
+  date: Date | null;
 }
 
-const DayModal: React.FC<DayModalProps> = ({ isOpen, onClose }) => {
-  const [activeItem, setActiveItem] = useState<string>('dashboard');
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null;
+const DayModal: React.FC<DayModalProps> = ({ isOpen, onClose, notes, date }) => {
+  const [activeItem, setActiveItem] = React.useState<string>('notes');
 
   const sidebarItems = [
     { 
-        icon: LayoutGrid, 
-        label: 'Dashboard', 
-        key: 'dashboard' 
+      icon: FileText, 
+      label: 'Notes', 
+      key: 'notes' 
     },
     { 
-        icon: ShoppingCart, 
-        label: 'Orders', 
-        key: 'orders' 
+      icon: Image, 
+      label: 'Photos', 
+      key: 'photos' 
     },
     { 
-        icon: Package, 
-        label: 'Inventory', 
-        key: 'inventory' 
+      icon: Calendar, 
+      label: 'Schedule', 
+      key: 'schedule' 
     },
     { 
-        icon: TruckIcon, 
-        label: 'Shipping', 
-        key: 'shipping' 
-    },
-    { 
-        icon: BarChart2, 
-        label: 'Analytics', 
-        key: 'analytics' 
-    },
-    { 
-        icon: Settings, 
-        label: 'Settings', 
-        key: 'settings' 
+      icon: BarChart2, 
+      label: 'Mood', 
+      key: 'mood' 
     }
   ];
 
   const renderContent = () => {
     switch(activeItem) {
-        case 'dashboard':
-            return (
-                <div className="h-full flex flex-col">
-                    <h2 className="text-xl font-light border-b border-black pb-2 mb-4">Dashboard</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="border border-black p-4">
-                            <h3 className="text-sm mb-2">Total Sales</h3>
-                            <p className="text-2xl font-thin">$45,231.89</p>
-                        </div>
-                        <div className="border border-black p-4">
-                            <h3 className="text-sm mb-2">Orders</h3>
-                            <p className="text-2xl font-thin">452</p>
-                        </div>
-                    </div>
-                </div>
-            );
-        case 'orders':
-            return (
-                <div className="h-full flex flex-col">
-                    <div className='notes-and-photos-section no-scrollbar'>
-                        <div>
-                            {notes.map((note) => (
-                                <NoteCard note={note} key={note.$id} />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        default:
-            return <div className="h-full flex items-center justify-center">Content for {activeItem}</div>;
+      case 'notes':
+        return (
+          <div className="h-full flex flex-col">
+            <div className="notes-and-photos-section">
+              <h2 className="text-xl font-light text-white p-4 border-b border-[#292a30]">
+                Notes for {date?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </h2>
+              <div className="p-4">
+                {notes.map((note) => (
+                  <NoteCard note={note} key={note.$id} />
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      case 'photos':
+        return (
+          <div className="h-full flex flex-col">
+            <div className="notes-and-photos-section">
+              <h2 className="text-xl font-light text-white p-4 border-b border-[#292a30]">Photos</h2>
+              <div className="grid grid-cols-3 gap-4 p-4">
+                {/* Photo grid will go here */}
+              </div>
+            </div>
+          </div>
+        );
+      case 'schedule':
+        return (
+          <div className="h-full flex flex-col bg-white">
+            <h2 className="text-xl font-light p-4 border-b border-gray-200">Schedule</h2>
+            <div className="p-4">
+              <div className="text-center py-8 text-gray-500">
+                Schedule content will go here
+              </div>
+            </div>
+          </div>
+        );
+      case 'mood':
+        return (
+          <div className="h-full flex flex-col bg-white">
+            <h2 className="text-xl font-light p-4 border-b border-gray-200">Mood Tracker</h2>
+            <div className="p-4">
+              <div className="text-center py-8 text-gray-500">
+                Mood tracking content will go here
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="h-full flex items-center justify-center bg-white">
+            <h2 className="text-xl font-light">Select a section from the sidebar</h2>
+          </div>
+        );
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <motion.div 
+    <div 
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: isOpen ? 1 : 0 }}
-      transition={{ duration: 0.3 }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      <motion.div 
-        className="w-[95vw] h-[95vh] bg-white flex border border-black"
-        initial={{ scale: 0.8 }}
-        animate={{ scale: isOpen ? 1 : 0.8 }}
-        transition={{ duration: 0.3 }}
+      <div 
+        className="w-[95vw] h-[95vh] flex border border-gray-200 bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex-1 p-8 overflow-auto border-r border-black">
+        <div className="flex-1 overflow-hidden">
           {renderContent()}
         </div>
 
-        <div className="w-20 flex flex-col">
+        <div className="w-20 flex flex-col border-l border-gray-200">
           {sidebarItems.map((item) => (
             <button
               key={item.key}
               onClick={() => setActiveItem(item.key)}
-              className={`p-4 border-b border-black hover:bg-black hover:text-white transition-all ${
-                  activeItem === item.key 
-                      ? 'bg-black text-white' 
-                      : ''
+              className={`p-4 border-b border-gray-200 hover:bg-gray-100 transition-all ${
+                activeItem === item.key 
+                  ? 'bg-gray-100 text-black' 
+                  : 'text-gray-600'
               }`}
+              title={item.label}
             >
               <item.icon className="h-6 w-6" />
             </button>
           ))}
           <button 
-            className="p-4 border-b border-black hover:bg-black hover:text-white"
+            className="p-4 border-b border-gray-200 hover:bg-gray-100 text-gray-600"
+            title="Save"
           >
             <Save className="h-6 w-6" />
           </button>
           <button 
             onClick={onClose}
-            className="p-4 mt-auto border-t border-black hover:bg-black hover:text-white"
+            className="p-4 mt-auto border-t border-gray-200 hover:bg-gray-100 text-gray-600"
+            title="Close"
           >
-            <Settings className="h-6 w-6" />
+            <X className="h-6 w-6" />
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
