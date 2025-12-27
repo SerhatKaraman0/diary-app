@@ -1,17 +1,19 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import React from "react"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function autoGrow(textAreaRef) {
+export function autoGrow(textAreaRef: React.RefObject<HTMLTextAreaElement | null>) {
   const { current } = textAreaRef;
+  if (!current) return;
   current.style.height = "auto"; // Reset the height
-  current.style.height = textAreaRef.current.scrollHeight + "px"; // Set the new height
+  current.style.height = current.scrollHeight + "px"; // Set the new height
 }
 
-export const setNewOffset = (card, mouseMoveDir = { x: 0, y: 0 }) => {
+export const setNewOffset = (card: HTMLElement, mouseMoveDir: { x: number; y: number } = { x: 0, y: 0 }) => {
   const offsetLeft = card.offsetLeft - mouseMoveDir.x;
   const offsetTop = card.offsetTop - mouseMoveDir.y;
 
@@ -21,12 +23,13 @@ export const setNewOffset = (card, mouseMoveDir = { x: 0, y: 0 }) => {
   };
 };
 
-export const setZIndex = (selectedCard) => {
-  selectedCard.style.zIndex = 999;
+export const setZIndex = (selectedCard: HTMLElement | null) => {
+  if (!selectedCard) return;
+  selectedCard.style.zIndex = "999";
 
   Array.from(document.getElementsByClassName("card")).forEach((card) => {
-      if (card !== selectedCard) {
-          card.style.zIndex = selectedCard.style.zIndex - 1;
+      if (card !== selectedCard && card instanceof HTMLElement) {
+          card.style.zIndex = "998";
       }
   });
 };

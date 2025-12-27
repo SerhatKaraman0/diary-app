@@ -11,12 +11,19 @@ export default function CalendarComponent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  let totalDayIndex = 1;
-
   const handleDayClick = (day: number, month: number) => {
     const date = new Date(new Date().getFullYear(), month, day);
     setSelectedDate(date);
     setIsModalOpen(true);
+  };
+
+  // Calculate totalDayIndex deterministically
+  const calculateTotalDayIndex = (monthIndex: number, dayIndex: number): number => {
+    let total = 0;
+    for (let i = 0; i < monthIndex; i++) {
+      total += daysOfMonths[i];
+    }
+    return total + dayIndex + 1;
   };
 
   return (
@@ -30,7 +37,7 @@ export default function CalendarComponent() {
                 key={`${monthIndex}-${dayIndex}`}
                 month={months[monthIndex]}
                 day={`${dayIndex + 1}`}
-                totalDayIndex={totalDayIndex++}
+                totalDayIndex={calculateTotalDayIndex(monthIndex, dayIndex)}
                 className="square"
                 onClick={() => handleDayClick(dayIndex + 1, monthIndex)}
               />
