@@ -1,6 +1,6 @@
 import Trash from "@/lib/assets/trash";
-import { useRef, useEffect, useState } from "react";
-import { autoGrow, setNewOffset, setZIndex } from "@/lib/utils";
+import { useRef, useEffect, useState, useCallback } from "react";
+import { autoGrow, setZIndex } from "@/lib/utils";
 
 interface Note {
     position: string;
@@ -15,7 +15,7 @@ const NoteCard = ({ note }: { note: Note }) => {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const dragStartRef = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
         autoGrow(textAreaRef);
@@ -23,25 +23,25 @@ const NoteCard = ({ note }: { note: Note }) => {
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         setZIndex(cardRef.current);
-        setIsDragging(true);
-        setDragStart({ 
+        dragStartRef.current = { 
             x: e.clientX - position.x, 
             y: e.clientY - position.y 
-        });
+        };
+        setIsDragging(true);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = useCallback((e: MouseEvent) => {
         if (!isDragging) return;
         
         setPosition({
-            x: e.clientX - dragStart.x,
-            y: e.clientY - dragStart.y
+            x: e.clientX - dragStartRef.current.x,
+            y: e.clientY - dragStartRef.current.y
         });
-    };
+    }, [isDragging]);
 
-    const handleMouseUp = () => {
+    const handleMouseUp = useCallback(() => {
         setIsDragging(false);
-    };
+    }, []);
 
     useEffect(() => {
         if (isDragging) {
@@ -52,7 +52,7 @@ const NoteCard = ({ note }: { note: Note }) => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isDragging]);
+    }, [isDragging, handleMouseMove, handleMouseUp]);
 
     return (
         <div
