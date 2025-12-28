@@ -4,7 +4,6 @@ import { DayData } from "@/lib/types"
 
 interface Props extends React.PropsWithChildren {
   className?: string;
-  isActive?: boolean;
   onClick?: () => void;
   day?: string;
   month?: string;
@@ -23,30 +22,42 @@ const DayCard: React.FC<Props> = ({
   onClick,
   dayData,
 }) => {
-  const isLeftmostCell = totalDayIndex ? totalDayIndex % 10 === 1 : false;
-  const isTopRow = totalDayIndex ? totalDayIndex <= 10 : false;
-  
   return (
     <div className={`relative ${className}`}>
       <motion.div
         id={scrollId}
         onClick={onClick}
-        className={`absolute inset-0 border-r border-b ${isLeftmostCell ? 'border-l' : ''} ${isTopRow ? 'border-t' : ''} border-black p-4 hover:bg-green-500 transition-colors cursor-pointer overflow-hidden`}
-        whileHover={{ scale: 1.05 }}
+        className={`absolute inset-0 border-2 border-gray-600 bg-journal-paper p-4 hover:scale-[1.05] transition-all cursor-pointer overflow-hidden scrapbook-card flex flex-col justify-between`}
+        style={{
+          borderRadius: `${8 + (totalDayIndex || 0) % 5}px ${12 + (totalDayIndex || 0) % 4}px ${10 + (totalDayIndex || 0) % 6}px ${15 + (totalDayIndex || 0) % 3}px`,
+          transform: `rotate(${(totalDayIndex || 0) % 2 === 0 ? -0.5 : 0.5}deg)`,
+        }}
+        whileHover={{ 
+          scale: 1.05,
+          rotate: (totalDayIndex || 0) % 2 === 0 ? -1 : 1,
+          boxShadow: '6px 6px 0px rgba(0,0,0,0.15)'
+        }}
         whileTap={{ scale: 0.95 }}
       >
         {dayData?.doodle && (
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute inset-0 opacity-40 pointer-events-none p-2">
             <img 
               src={dayData.doodle} 
               alt="Doodle preview" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </div>
         )}
-        <p className="absolute top-0 left-0 pl-2 text-red-400 text-3xl z-10">{day}</p>
-        <p className="absolute bottom-0 left-0 pl-2 text-xl z-10">{month}</p>
-        <p className="absolute bottom-0 right-0 pr-2 text-slate-600 text-lg z-10">#{totalDayIndex}</p>
+        <div className="flex justify-between items-start z-10">
+          <p className="label-maker" style={{ transform: 'rotate(-2deg)' }}>{day}</p>
+          <p className="typewriter opacity-60">#{totalDayIndex}</p>
+        </div>
+        <div className="flex justify-between items-end z-10">
+          <p className="handwriting text-sm uppercase tracking-widest">{month}</p>
+          {dayData?.mood && (
+            <div className="w-4 h-4 rounded-full border border-gray-400" style={{ backgroundColor: dayData.moodColor }} />
+          )}
+        </div>
       </motion.div>
     </div>
   );

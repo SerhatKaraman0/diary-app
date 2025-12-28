@@ -38,4 +38,6 @@ export interface DayData {
     };
     highlight?: string;
     steps?: number;
+    mood?: string;
+    moodColor?: string;
 }

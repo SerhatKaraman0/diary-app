@@ -1,16 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserSettingsProvider } from "@/lib/contexts/UserSettingsContext";
 import ThemeProvider from "./components/ThemeProvider";
+import { Alfa_Slab_One, Caveat, Special_Elite } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const alfaSlabOne = Alfa_Slab_One({
+  weight: "400",
+  variable: "--font-heading",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const caveat = Caveat({
+  variable: "--font-handwriting",
+  subsets: ["latin"],
+});
+
+const specialElite = Special_Elite({
+  weight: "400",
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -26,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+      <body className={`${alfaSlabOne.variable} ${caveat.variable} ${specialElite.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
           <UserSettingsProvider>
             {children}

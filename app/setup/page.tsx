@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useUserSettings } from "@/lib/contexts/UserSettingsContext";
@@ -9,53 +9,34 @@ import { X, ArrowLeft } from "lucide-react";
 
 type Step = 1 | 2 | 3;
 
-const daysOfMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
 const HABIT_COLORS = [
-    "#EF4444", // red
-    "#F97316", // orange
-    "#EAB308", // yellow
-    "#22C55E", // green
-    "#06B6D4", // cyan
-    "#3B82F6", // blue
-    "#6366F1", // indigo
-    "#8B5CF6", // purple
-    "#EC4899", // pink
-    "#F43F5E", // rose
+    "#FF4953", // bright red
+    "#C79B60", // golden brown
+    "#D4AF37", // muted gold
+    "#2C3E50", // dusk blue
+    "#E67E22", // sunset orange
+    "#6C553A", // dark brown
+    "#CC182B", // deep red
+    "#9B7753", // medium brown
+    "#4E4A3D", // deep brown-tan
+    "#202A22", // very dark
 ];
 
 function CalendarBackground() {
-    const calculateTotalDayIndex = (monthIndex: number, dayIndex: number): number => {
-        let total = 0;
-        for (let i = 0; i < monthIndex; i++) {
-            total += daysOfMonths[i];
-        }
-        return total + dayIndex + 1;
-    };
-
     return (
-        <div className="absolute inset-0 flex h-screen w-full bg-white pointer-events-none">
+        <div className="absolute inset-0 flex h-screen w-full bg-journal-paper pointer-events-none opacity-20">
             <div className="grid grid-cols-10 w-full h-full overflow-hidden">
-                {daysOfMonths.flatMap((days, monthIndex) =>
-                    Array.from({ length: days }, (_, dayIndex) => (
-                        <div key={`${monthIndex}-${dayIndex}`} className="relative square pointer-events-none">
-                            <div className="absolute inset-0 border-r border-b border-black p-4">
-                                <p className="absolute top-0 left-0 pl-2 text-red-400 text-3xl">{dayIndex + 1}</p>
-                                <p className="absolute bottom-0 left-0 pl-2 text-xl">{months[monthIndex]}</p>
-                                <p className="absolute bottom-0 right-0 pr-2 text-slate-600 text-lg">
-                                    {calculateTotalDayIndex(monthIndex, dayIndex)}
-                                </p>
-                            </div>
-                        </div>
-                    ))
-                )}
+                {Array.from({ length: 100 }).map((_, i) => (
+                    <div key={i} className="border-r border-b border-gray-300 relative">
+                        <div className="absolute top-2 left-2 w-1 h-1 rounded-full bg-gray-400" />
+                    </div>
+                ))}
             </div>
         </div>
     );
 }
 
-export default function SetupPage() {
+function SetupContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const testMode = searchParams.get("test") === "true";
@@ -78,20 +59,16 @@ export default function SetupPage() {
         }
     }, [isInitialized, isSetupComplete, router, testMode]);
 
-    // Get used colors from existing habits
-    const usedColors = new Set(habits.map((h) => h.color));
+    const usedColors = useMemo(() => new Set(habits.map((h) => h.color)), [habits]);
 
-    // Only reset color selection when habits array changes (not on every render)
     useEffect(() => {
         if (habits.length === 0) {
             setSelectedColorIndex(0);
             return;
         }
         
-        // Only auto-select if current selection is used
         const currentColor = HABIT_COLORS[selectedColorIndex];
         if (usedColors.has(currentColor)) {
-            // Current selection is used, find first available
             const firstAvailable = HABIT_COLORS.findIndex(
                 (color) => !usedColors.has(color)
             );
@@ -99,12 +76,12 @@ export default function SetupPage() {
                 setSelectedColorIndex(firstAvailable);
             }
         }
-    }, [habits.length]); // Only depend on habits.length, not selectedColorIndex
+    }, [habits.length, selectedColorIndex, usedColors]);
 
     if (!isInitialized) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">Loading...</div>
+            <div className="min-h-screen flex items-center justify-center bg-journal-paper">
+                <div className="typewriter animate-pulse">Initializing Journal...</div>
             </div>
         );
     }
@@ -115,451 +92,267 @@ export default function SetupPage() {
 
     function validateStep(step: Step): boolean {
         const newErrors: typeof errors = {};
-
         if (step === 1) {
-            if (!name.trim()) {
-                newErrors.name = "Name is required";
-            }
+            if (!name.trim()) newErrors.name = "What shall we call you?";
         } else if (step === 2) {
-            if (!notificationTime) {
-                newErrors.notificationTime = "Notification time is required";
-            }
+            if (!notificationTime) newErrors.notificationTime = "When should I remind you?";
         } else if (step === 3) {
-            if (habits.length === 0) {
-                newErrors.habits = "At least one habit is required";
-            }
+            if (habits.length === 0) newErrors.habits = "Add at least one habit to track!";
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     }
 
     function handlePreviousStep() {
-        if (currentStep > 1) {
-            setCurrentStep((prev) => (prev - 1) as Step);
-        }
+        if (currentStep > 1) setCurrentStep((prev) => (prev - 1) as Step);
     }
 
     function handleNextStep() {
-        if (!validateStep(currentStep)) {
-            return;
-        }
-
-        if (currentStep < 3) {
-            setCurrentStep((prev) => (prev + 1) as Step);
-        } else {
-            handleSubmit();
-        }
+        if (!validateStep(currentStep)) return;
+        if (currentStep < 3) setCurrentStep((prev) => (prev + 1) as Step);
+        else handleSubmit();
     }
 
     function handleAddHabit() {
         const trimmed = habitInput.trim();
-        if (!trimmed) {
-            return;
-        }
-
+        if (!trimmed) return;
         if (habits.length >= 10) {
-            setErrors((prev) => ({
-                ...prev,
-                habits: "Maximum 10 habits allowed",
-            }));
+            setErrors((prev) => ({ ...prev, habits: "Wow, that's a lot of habits! Max 10." }));
             return;
         }
-
         if (habits.some((h) => h.name.toLowerCase() === trimmed.toLowerCase())) {
-            setErrors((prev) => ({
-                ...prev,
-                habits: "This habit already exists",
-            }));
+            setErrors((prev) => ({ ...prev, habits: "You're already tracking this!" }));
             return;
         }
 
         const selectedColor = HABIT_COLORS[selectedColorIndex];
-        if (usedColors.has(selectedColor)) {
-            setErrors((prev) => ({
-                ...prev,
-                habits: "This color is already used by another habit",
-            }));
-            return;
-        }
-
-        const newHabit: Habit = {
-            name: trimmed,
-            color: selectedColor,
-        };
-
-        setHabits([...habits, newHabit]);
+        setHabits([...habits, { name: trimmed, color: selectedColor }]);
         setHabitInput("");
         
-        // Find next available color
-        const nextAvailableIndex = HABIT_COLORS.findIndex(
-            (color) => !usedColors.has(color) && color !== selectedColor
-        );
+        const nextAvailableIndex = HABIT_COLORS.findIndex((color) => !usedColors.has(color) && color !== selectedColor);
         setSelectedColorIndex(nextAvailableIndex !== -1 ? nextAvailableIndex : 0);
-        
         setErrors((prev) => {
-            const { habits: _, ...rest } = prev;
+            const rest = { ...prev };
+            delete rest.habits;
             return rest;
         });
     }
 
-    function handleRemoveHabit(index: number) {
-        setHabits(habits.filter((_, i) => i !== index));
-        if (errors.habits && habits.length > 1) {
-            setErrors((prev) => {
-                const { habits: _, ...rest } = prev;
-                return rest;
-            });
-        }
-    }
-
-    function handleUpdateHabitColor(index: number, color: string) {
-        // Check if color is used by another habit
-        const isColorUsed = habits.some((h, i) => i !== index && h.color === color);
-        if (isColorUsed) {
-            return; // Don't allow using the same color
-        }
-        setHabits(habits.map((habit, i) => (i === index ? { ...habit, color } : habit)));
+    function handleRemoveHabit(idx: number) {
+        setHabits(habits.filter((h, i) => i !== idx));
     }
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.key === "Enter") {
             e.preventDefault();
-            if (currentStep === 3 && habitInput.trim()) {
-                handleAddHabit();
-            } else if (currentStep !== 3) {
-                handleNextStep();
-            }
+            if (currentStep === 3 && habitInput.trim()) handleAddHabit();
+            else if (currentStep !== 3) handleNextStep();
         }
     }
 
     function handleSubmit() {
-        if (!validateStep(3)) {
-            return;
-        }
-
+        if (!validateStep(3)) return;
         const userSettings: UserSettings = {
             name: name.trim(),
             notificationTime,
             habits,
             setupComplete: true,
         };
-
         updateSettings(userSettings);
-        if (testMode) {
-            router.push("/setup?test=true");
-        } else {
-            router.push("/");
-        }
+        router.push(testMode ? "/setup?test=true" : "/");
     }
 
     function isStepValid(step: Step): boolean {
-        if (step === 1) {
-            return name.trim().length > 0;
-        } else if (step === 2) {
-            return notificationTime.length > 0;
-        } else if (step === 3) {
-            return habits.length > 0;
-        }
+        if (step === 1) return name.trim().length > 0;
+        if (step === 2) return notificationTime.length > 0;
+        if (step === 3) return habits.length > 0;
         return false;
     }
 
-    function renderStepContent() {
-        switch (currentStep) {
-            case 1:
-                return (
-                    <motion.div
-                        key="step1"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-4 w-full"
-                    >
-                        <label htmlFor="name" className="block text-sm font-medium">
-                            Your Name
-                        </label>
-                        <input
-                            id="name"
-                            type="text"
-                            value={name}
-                            onChange={(e) => {
-                                setName(e.target.value);
-                                if (errors.name) {
-                                    setErrors((prev) => ({ ...prev, name: undefined }));
-                                }
-                            }}
-                            onKeyDown={handleKeyDown}
-                            className="w-full h-10 px-3 border border-black focus:outline-none focus:ring-2 focus:ring-black"
-                            placeholder="Enter your name"
-                            autoFocus
-                        />
-                        {errors.name && (
-                            <p className="text-sm text-destructive">{errors.name}</p>
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <CalendarBackground />
+            <div className="absolute inset-0 bg-black/5 backdrop-blur-[2px]" />
+            
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9, rotate: -1 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ type: "spring", damping: 20 }}
+                className="relative bg-journal-paper w-full max-w-2xl border-2 border-gray-600 p-12 scrapbook-card overflow-hidden"
+                style={{ borderRadius: '20px 30px 18px 25px' }}
+            >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-10 washi-tape rotate-[-1deg] z-10" />
+                
+                <div className="mb-10 text-center">
+                    <h1 className="label-maker mb-4 inline-block" style={{ transform: 'rotate(1deg)' }}>
+                        JOURNAL <span className="opacity-50">SETUP</span>
+                    </h1>
+                    <div className="flex justify-center gap-2 mt-2">
+                        {[1, 2, 3].map((s) => (
+                            <div 
+                                key={s} 
+                                className={`w-3 h-3 rounded-full border border-gray-400 transition-colors ${currentStep >= s ? 'bg-journal-heart' : 'bg-white'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="min-h-[250px] flex items-center justify-center">
+                    <AnimatePresence mode="wait">
+                        {currentStep === 1 && (
+                            <motion.div
+                                key="step1"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6 w-full"
+                            >
+                                <div className="space-y-2">
+                                    <label className="typewriter text-xs">Your Signature</label>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        className="w-full bg-white border-2 border-gray-600 p-4 handwriting text-3xl focus:outline-none focus:ring-4 focus:ring-gray-100 scrapbook-card !p-4"
+                                        placeholder="Type your name..."
+                                        autoFocus
+                                    />
+                                    {errors.name && <p className="handwriting text-journal-heart text-sm">{errors.name}</p>}
+                                </div>
+                            </motion.div>
                         )}
-                    </motion.div>
-                );
 
-            case 2:
-                return (
-                    <motion.div
-                        key="step2"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-4 w-full"
-                    >
-                        <label htmlFor="notificationTime" className="block text-sm font-medium">
-                            Notification Time
-                        </label>
-                        <input
-                            id="notificationTime"
-                            type="time"
-                            value={notificationTime}
-                            onChange={(e) => {
-                                setNotificationTime(e.target.value);
-                                if (errors.notificationTime) {
-                                    setErrors((prev) => ({ ...prev, notificationTime: undefined }));
-                                }
-                            }}
-                            onKeyDown={handleKeyDown}
-                            className="w-full h-10 px-3 border border-black focus:outline-none focus:ring-2 focus:ring-black"
-                            autoFocus
-                        />
-                        {errors.notificationTime && (
-                            <p className="text-sm text-destructive">{errors.notificationTime}</p>
+                        {currentStep === 2 && (
+                            <motion.div
+                                key="step2"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6 w-full"
+                            >
+                                <div className="space-y-2">
+                                    <label className="typewriter text-xs">Daily Reflection Time</label>
+                                    <div className="relative">
+                                        <input
+                                            type="time"
+                                            value={notificationTime}
+                                            onChange={(e) => setNotificationTime(e.target.value)}
+                                            onKeyDown={handleKeyDown}
+                                            className="w-full bg-white border-2 border-gray-600 p-4 font-heading text-4xl focus:outline-none focus:ring-4 focus:ring-gray-100 scrapbook-card !p-4"
+                                            autoFocus
+                                        />
+                                        <div className="absolute -right-4 -top-4 w-12 h-12 washi-tape rotate-12 opacity-30" />
+                                    </div>
+                                    {errors.notificationTime && <p className="handwriting text-journal-heart text-sm">{errors.notificationTime}</p>}
+                                </div>
+                            </motion.div>
                         )}
-                    </motion.div>
-                );
 
-            case 3:
-                return (
-                    <motion.div
-                        key="step3"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-4 w-full"
-                    >
-                        <label htmlFor="habits" className="block text-sm font-medium">
-                            Habits to Track
-                        </label>
-                        <div className="space-y-3">
-                            <div className="flex gap-2">
-                                <input
-                                    id="habits"
-                                    type="text"
-                                    value={habitInput}
-                                    onChange={(e) => setHabitInput(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    disabled={habits.length >= 10}
-                                    className="flex-1 h-10 px-3 border border-black focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
-                                    placeholder={
-                                        habits.length >= 10
-                                            ? "Maximum 10 habits reached"
-                                            : "Enter a habit"
-                                    }
-                                    autoFocus
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleAddHabit}
-                                    disabled={habits.length >= 10 || !habitInput.trim()}
-                                    className="h-10 px-4 border border-black bg-white hover:bg-black hover:text-white transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-black"
-                                >
-                                    Add
-                                </button>
-                            </div>
+                        {currentStep === 3 && (
+                            <motion.div
+                                key="step3"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6 w-full"
+                            >
+                                <div className="space-y-4">
+                                    <label className="typewriter text-xs">Things to Cultivate</label>
+                                    <div className="flex gap-2 relative">
+                                        <input
+                                            type="text"
+                                            value={habitInput}
+                                            onChange={(e) => setHabitInput(e.target.value)}
+                                            onKeyDown={handleKeyDown}
+                                            className="flex-1 bg-white border-2 border-gray-600 p-3 handwriting text-xl focus:outline-none scrapbook-card !p-3"
+                                            placeholder="Add a new habit..."
+                                            autoFocus
+                                        />
+                                        <button
+                                            onClick={handleAddHabit}
+                                            className="bg-gray-600 text-white px-6 font-heading text-xs uppercase tracking-widest hover:bg-gray-700 transition-colors border-2 border-gray-800"
+                                            style={{ borderRadius: '4px 12px 3px 8px' }}
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
 
-                            {habitInput.trim() && habits.length < 10 && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="flex items-center gap-2 p-2 border border-black bg-white overflow-hidden"
-                                >
-                                    <span className="text-xs text-muted-foreground">Color:</span>
-                                    <div className="flex gap-1.5 flex-1">
+                                    <div className="flex flex-wrap gap-2 pt-2">
                                         {HABIT_COLORS.map((color, index) => {
                                             const isUsed = usedColors.has(color);
                                             const isSelected = selectedColorIndex === index;
                                             return (
                                                 <button
                                                     key={index}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (!isUsed) {
-                                                            setSelectedColorIndex(index);
-                                                        }
-                                                    }}
-                                                    disabled={isUsed}
-                                                    className={`w-6 h-6 rounded-full border-2 transition-all ${
-                                                        isSelected
-                                                            ? "border-black scale-110"
-                                                            : isUsed
-                                                            ? "border-gray-300 opacity-40 cursor-not-allowed"
-                                                            : "border-transparent hover:border-gray-400"
-                                                    }`}
+                                                    onClick={() => !isUsed && setSelectedColorIndex(index)}
+                                                    className={`w-6 h-6 rounded-full border-2 transition-all ${isSelected ? 'border-gray-800 scale-125 ring-2 ring-gray-200 ring-offset-1' : 'border-transparent opacity-40'}`}
                                                     style={{ backgroundColor: color }}
-                                                    aria-label={`Select color ${index + 1}${isUsed ? " (already used)" : ""}`}
-                                                    title={isUsed ? "This color is already used" : ""}
+                                                    disabled={isUsed}
                                                 />
                                             );
                                         })}
                                     </div>
-                                </motion.div>
-                            )}
-                        </div>
-                        {errors.habits && (
-                            <p className="text-sm text-destructive">{errors.habits}</p>
-                        )}
 
-                        {habits.length > 0 && (
-                            <div className="grid grid-cols-5 gap-2 mt-4">
-                                <AnimatePresence mode="popLayout">
-                                    {habits.map((habit, index) => (
-                                        <motion.div
-                                            key={`${habit.name}-${index}`}
-                                            layout
-                                            initial={{ opacity: 0, scale: 0.8, y: -20 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.8, y: -20, transition: { duration: 0.2 } }}
-                                            transition={{ 
-                                                duration: 0.3, 
-                                                delay: index * 0.03,
-                                                layout: { duration: 0.2 }
-                                            }}
-                                            className="relative flex flex-col items-center justify-center p-2 border border-black bg-white group"
-                                        >
-                                        <div
-                                            className="w-full h-8 mb-1 rounded-sm transition-colors"
-                                            style={{ backgroundColor: habit.color }}
-                                        />
-                                        <span className="text-xs truncate w-full text-center">
-                                            {habit.name}
-                                        </span>
-                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="relative group/color">
-                                                <button
-                                                    type="button"
-                                                    className="p-0.5 hover:bg-black hover:text-white transition-colors focus:outline-none"
-                                                    aria-label={`Change color for ${habit.name}`}
-                                                >
-                                                    <div
-                                                        className="w-3 h-3 rounded-full border border-black"
-                                                        style={{ backgroundColor: habit.color }}
-                                                    />
-                                                </button>
-                                                <div className="absolute top-full right-0 mt-1 p-2 bg-white border border-black z-10 hidden group-hover/color:block group-focus-within/color:block">
-                                                    <div className="flex gap-1.5">
-                                                        {HABIT_COLORS.map((color, colorIndex) => {
-                                                            const isColorUsed = habits.some((h, i) => i !== index && h.color === color);
-                                                            const isCurrentColor = habit.color === color;
-                                                            return (
-                                                                <button
-                                                                    key={colorIndex}
-                                                                    type="button"
-                                                                    onClick={() => !isColorUsed && handleUpdateHabitColor(index, color)}
-                                                                    disabled={isColorUsed}
-                                                                    className={`w-5 h-5 rounded-full border-2 transition-all ${
-                                                                        isCurrentColor
-                                                                            ? "border-black scale-110"
-                                                                            : isColorUsed
-                                                                            ? "border-gray-300 opacity-40 cursor-not-allowed"
-                                                                            : "border-transparent hover:border-gray-400"
-                                                                    }`}
-                                                                    style={{ backgroundColor: color }}
-                                                                    aria-label={`Change to color ${colorIndex + 1}${isColorUsed ? " (already used)" : ""}`}
-                                                                    title={isColorUsed ? "This color is already used" : ""}
-                                                                />
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveHabit(index)}
-                                                className="p-0.5 hover:bg-black hover:text-white transition-colors focus:outline-none"
-                                                aria-label={`Remove ${habit.name}`}
+                                    <div className="max-h-[150px] overflow-y-auto pr-2 custom-scrollbar flex flex-wrap gap-2 pt-4">
+                                        {habits.map((habit, index) => (
+                                            <motion.div
+                                                key={index}
+                                                layout
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                className="bg-white border-2 border-gray-600 px-3 py-1 flex items-center gap-2 scrapbook-card !p-1"
+                                                style={{ borderRadius: '4px 8px', transform: `rotate(${index % 2 === 0 ? -1 : 1}deg)` }}
                                             >
-                                                <X className="w-3 h-3" />
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            </div>
+                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: habit.color }} />
+                                                <span className="handwriting text-sm">{habit.name}</span>
+                                                <button onClick={() => handleRemoveHabit(index)} className="text-gray-400 hover:text-journal-heart transition-colors">
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                    {errors.habits && <p className="handwriting text-journal-heart text-sm">{errors.habits}</p>}
+                                </div>
+                            </motion.div>
                         )}
-
-                        {habits.length === 0 && (
-                            <p className="text-sm text-muted-foreground">
-                                Add at least one habit to continue
-                            </p>
-                        )}
-                    </motion.div>
-                );
-
-            default:
-                return null;
-        }
-    }
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <CalendarBackground />
-            <div className="absolute inset-0 bg-black/30 backdrop-blur-md" />
-            
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="relative bg-background w-full max-w-3xl mx-4 border border-black p-8 flex flex-col max-h-[90vh] shadow-2xl"
-            >
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold mb-2">Welcome! Let's get started</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Step {currentStep} of 3
-                    </p>
-                    {testMode && (
-                        <p className="text-xs text-muted-foreground mt-1 italic">
-                            Test Mode: Setup page accessible
-                        </p>
-                    )}
-                </div>
-
-                <div className="flex-1 flex items-center justify-center min-h-[300px]">
-                    <AnimatePresence mode="wait">
-                        {renderStepContent()}
                     </AnimatePresence>
                 </div>
 
-                <div className="mt-8 flex gap-3">
+                <div className="mt-12 flex gap-4">
                     {currentStep > 1 && (
                         <button
-                            type="button"
                             onClick={handlePreviousStep}
-                            className="flex items-center justify-center gap-2 h-12 px-4 border border-black bg-white hover:bg-black hover:text-white transition-colors focus:outline-none"
+                            className="flex items-center gap-2 typewriter text-xs hover:text-gray-900 transition-colors"
                         >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back
+                            <ArrowLeft className="w-4 h-4" /> Back
                         </button>
                     )}
                     <button
-                        type="button"
                         onClick={handleNextStep}
                         disabled={!isStepValid(currentStep)}
-                        className={`flex-1 h-12 px-4 border border-black bg-white hover:bg-black hover:text-white transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-black ${
-                            currentStep === 1 ? "" : ""
-                        }`}
+                        className="flex-1 bg-gray-600 text-white p-4 font-heading text-sm uppercase tracking-widest border-2 border-gray-800 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30"
+                        style={{ 
+                            borderRadius: '8px 12px 10px 15px',
+                            boxShadow: '4px 4px 0px rgba(0,0,0,0.1)'
+                        }}
                     >
-                        {currentStep === 3 ? "Complete Setup" : "Continue"}
+                        {currentStep === 3 ? "Open My Journal" : "Next Step"}
                     </button>
                 </div>
             </motion.div>
         </div>
+    );
+}
+
+export default function SetupPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-journal-paper">
+                <div className="typewriter">Opening Journal...</div>
+            </div>
+        }>
+            <SetupContent />
+        </Suspense>
     );
 }

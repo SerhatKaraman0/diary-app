@@ -1,11 +1,16 @@
-const Trash = ({ size = "24" }) => {
+interface TrashProps {
+    size?: string;
+    color?: string;
+}
+
+const Trash = ({ size = "24", color = "#000000" }: TrashProps) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             width={size}
             height={size}
-            stroke="#000000"
+            stroke={color}
             fill="none"
             strokeWidth="1.5"
         >

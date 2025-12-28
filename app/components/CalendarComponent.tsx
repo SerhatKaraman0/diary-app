@@ -13,7 +13,7 @@ interface CalendarComponentProps {
   selectedHabit: Habit | null;
 }
 
-export default function CalendarComponent({ selectedHabit }: CalendarComponentProps) {
+export default function CalendarComponent({ }: CalendarComponentProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dayDataMap, setDayDataMap] = useState<Record<string, DayData>>({});
@@ -50,8 +50,8 @@ export default function CalendarComponent({ selectedHabit }: CalendarComponentPr
 
   return (
     <>
-      <div className="flex h-full w-full bg-white">
-        <div className="grid grid-cols-10 w-full h-full overflow-y-auto no-scrollbar p-4 md:p-6 lg:p-8">
+      <div className="flex h-full w-full bg-transparent">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-6 w-full h-full overflow-y-auto no-scrollbar p-6 md:p-10 lg:p-12">
           {daysOfMonths.flatMap((days, monthIndex) =>
             Array.from({ length: days }, (_, dayIndex) => (
               <DayCard

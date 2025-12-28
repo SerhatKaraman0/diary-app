@@ -1,17 +1,38 @@
+"use client";
 import Trash from "@/lib/assets/trash";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { autoGrow, setZIndex } from "@/lib/utils";
+import { Note } from "@/lib/types";
 
-interface Note {
-    position: string;
-    colors: string;
-    body: string;
+interface NoteCardProps {
+    note: Note;
 }
 
-const NoteCard = ({ note }: { note: Note }) => {
-    const [position, setPosition] = useState(JSON.parse(note.position));
-    const colors = JSON.parse(note.colors);
-    const body = JSON.parse(note.body);
+const NoteCard = ({ note }: NoteCardProps) => {
+    const [position, setPosition] = useState(() => {
+        try {
+            return JSON.parse(note.position);
+        } catch {
+            return { x: 0, y: 0 };
+        }
+    });
+    
+    const colors = (() => {
+        try {
+            return JSON.parse(note.colors);
+        } catch {
+            return { colorBody: "#FFFFFF", colorHeader: "#9bd1de", colorText: "#000000" };
+        }
+    })();
+    
+    const body = (() => {
+        try {
+            return JSON.parse(note.body);
+        } catch {
+            return note.body;
+        }
+    })();
+
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -57,24 +78,35 @@ const NoteCard = ({ note }: { note: Note }) => {
     return (
         <div
             ref={cardRef}
-            className="card absolute"
+            className="scrapbook-card absolute flex flex-col overflow-hidden transition-none"
             style={{
                 backgroundColor: colors.colorBody,
                 left: `${position.x}px`,
                 top: `${position.y}px`,
+                borderRadius: '8px 12px 10px 15px',
+                transform: `rotate(${(position.x + position.y) % 2 === 0 ? -1 : 1}deg)`,
+                width: '300px',
+                minHeight: '200px',
+                zIndex: isDragging ? 999 : undefined,
+                position: 'absolute'
             }}
         >
             <div
                 onMouseDown={handleMouseDown}
-                className="card-header cursor-move"
+                className="washi-tape cursor-move flex items-center justify-between px-3"
                 style={{
                     backgroundColor: colors.colorHeader,
+                    opacity: 1,
+                    height: '28px'
                 }}
             >
-                <Trash />
+                <div className="typewriter text-[9px] text-white/70 font-bold tracking-widest">STATIONERY</div>
+                <button className="hover:scale-110 transition-transform p-1">
+                    <Trash color={colors.colorText} />
+                </button>
             </div>
             <div
-                className="card-body"
+                className="flex-1 p-5 handwriting"
                 style={{
                     color: colors.colorText,
                 }}
@@ -89,7 +121,12 @@ const NoteCard = ({ note }: { note: Note }) => {
                     onFocus={() => {
                         setZIndex(cardRef.current);
                     }}
+                    className="w-full h-full bg-transparent border-none focus:outline-none resize-none leading-relaxed"
+                    placeholder="Type your thoughts..."
                 ></textarea>
+            </div>
+            <div className="px-4 py-2 flex justify-end opacity-20">
+                <div className="w-3 h-3 rounded-full border-2 border-current" />
             </div>
         </div>
     );

@@ -11,7 +11,7 @@ function migrateHabits(habits: unknown): Habit[] {
     // Check if it's the old format (string[])
     if (habits.length > 0 && typeof habits[0] === "string") {
         // Migrate from string[] to Habit[]
-        return (habits as string[]).map((name, index) => ({
+        return (habits as string[]).map((name) => ({
             name,
             color: DEFAULT_COLOR,
         }));
@@ -31,14 +31,14 @@ export function getUserSettings(): UserSettings | null {
         if (!stored) {
             return null;
         }
-        const parsed = JSON.parse(stored) as any;
+        const parsed = JSON.parse(stored) as UserSettings;
         
         // Migrate old format to new format
         if (parsed.habits && Array.isArray(parsed.habits)) {
             parsed.habits = migrateHabits(parsed.habits);
         }
         
-        return parsed as UserSettings;
+        return parsed;
     } catch (error) {
         console.error("Error reading user settings from localStorage:", error);
         return null;
