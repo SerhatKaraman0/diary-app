@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserSettings } from "@/lib/contexts/UserSettingsContext";
+import { Habit } from "@/lib/types";
 import CalendarComponent from "./components/CalendarComponent";
-import GoDateButton from "./components/GoDateButton";
+import TopBar from "./components/TopBar";
 
 export default function Home() {
     const router = useRouter();
     const { isSetupComplete, isInitialized } = useUserSettings();
+    const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
 
     useEffect(() => {
         if (isInitialized && !isSetupComplete) {
@@ -29,9 +31,11 @@ export default function Home() {
     }
 
     return (
-        <div className="flex h-full w-full"> 
-            <GoDateButton />
-            <CalendarComponent />        
+        <div className="flex flex-col h-screen w-full">
+            <TopBar selectedHabit={selectedHabit} onHabitChange={setSelectedHabit} />
+            <div className="flex-1 pt-16 overflow-hidden">
+                <CalendarComponent selectedHabit={selectedHabit} />
+            </div>
         </div>
     );
 }
